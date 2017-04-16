@@ -15,6 +15,9 @@
 #include "userprog/process.h"
 #endif
 
+#define NICE_MAX 20
+#define NICE_DEFAULT 0
+
 /* Random value for struct thread's `magic' member.
    Used to detect stack overflow.  See the big comment at the top
    of thread.h for details. */
@@ -357,15 +360,18 @@ thread_get_priority (void)
 void
 thread_set_nice (int nice UNUSED) 
 {
-  /* Not yet implemented. */
+  enum intr_level disable_interrupt = intr_disable();
+  thread_current()->niceness= nice;
+  /*calculate priority*/
+  intr_set_level(disable_interrupt);
+
 }
 
 /* Returns the current thread's nice value. */
 int
 thread_get_nice (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+  return thread_current()->niceness;
 }
 
 /* Returns 100 times the system load average. */
@@ -582,6 +588,14 @@ allocate_tid (void)
   return tid;
 }
 
+/*Additional functions*/
+
+void CalculatePriorityMLFQS(struct thread *t){
+  if(t== idle_thread){
+    return;
+  }
+  
+}
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
