@@ -142,4 +142,11 @@ void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
+/*Additional functions*/
+
+void CalcPriorityMLFQS(struct thread *thr);
+void CalcRecentCpuMLFQS(struct thread *thr);
+void CalcLoadAvgMLFQS(void);
+void IncrementCpuMLFQS(void);
+void RecalcPriorityMLFQS(void);
 #endif /* threads/thread.h */

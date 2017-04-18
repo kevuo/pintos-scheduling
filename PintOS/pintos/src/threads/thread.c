@@ -11,6 +11,7 @@
 #include "threads/switch.h"
 #include "threads/synch.h"
 #include "threads/vaddr.h"
+#include "threads/fp_operations.h"
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
@@ -112,6 +113,8 @@ thread_start (void)
   struct semaphore idle_started;
   sema_init (&idle_started, 0);
   thread_create ("idle", PRI_MIN, idle, &idle_started);
+
+  load_avg = 0; 
 
   /* Start preemptive thread scheduling. */
   intr_enable ();
@@ -353,7 +356,10 @@ thread_set_priority (int new_priority)
 int
 thread_get_priority (void) 
 {
-  return thread_current ()->priority;
+  enum intr_level disable_interrupt = intr_disable();
+  int priority = thread_current()->priority;
+  intr_set_level(disable_interrupt);
+  return priority;
 }
 
 /* Sets the current thread's nice value to NICE. */
@@ -362,32 +368,38 @@ thread_set_nice (int nice UNUSED)
 {
   enum intr_level disable_interrupt = intr_disable();
   thread_current()->niceness= nice;
-  /*calculate priority*/
+  CalcPriorityMLFQS(thread_current());
   intr_set_level(disable_interrupt);
-
 }
 
 /* Returns the current thread's nice value. */
 int
 thread_get_nice (void) 
 {
-  return thread_current()->niceness;
+  enum intr_level disable_interrupt = intr_disable();
+  int nice = thread_current()->niceness;
+  intr_set_level(disable_interrupt);
+  return nice;
 }
 
 /* Returns 100 times the system load average. */
 int
 thread_get_load_avg (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+  enum intr_level disable_interrupt = intr_disable();
+  int ldavg = fp_to_int_round_nearest(mult_fp_int(load_avg, 100));
+  intr_set_level(disable_interrupt);
+  return ldavg;
 }
 
 /* Returns 100 times the current thread's recent_cpu value. */
 int
 thread_get_recent_cpu (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+  enum intr_level disable_interrupt = intr_disable();
+  int cpu = fp_to_int_round_nearest(mult_fp_int(thread_current()->recent_cpu, 100));
+  intr_set_level(disable_interrupt);
+  return cpu;
 }
 
 /* Idle thread.  Executes when no other thread is ready to run.
@@ -417,7 +429,7 @@ idle (void *idle_started_ UNUSED)
          The `sti' instruction disables interrupts until the
          completion of the next instruction, so these two
          instructions are executed atomically.  This atomicity is
-         important; otherwise, an interrupt could be handled
+         important; othmlfqserwise, an interrupt could be handled
          between re-enabling interrupts and waiting for the next
          one to occur, wasting as much as one clock tick worth of
          time.
@@ -588,14 +600,77 @@ allocate_tid (void)
   return tid;
 }
 
-/*Additional functions*/
 
-void CalculatePriorityMLFQS(struct thread *t){
-  if(t== idle_thread){
-    return;
-  }
-  
-}
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
+
+/*Additional functions*/
+
+/*Calculates a thread's priority given the formula:
+priority = PRI_MAX - (recent_cpu / 4) - (nice * 2).*/
+void CalcPriorityMLFQS(struct thread *thr){
+  if(t== idle_thread){
+    return;
+  }
+  int priority = int_to_fp(PRI_MAX);
+  int cpu = div_fp_int(thr, 4);
+  int nice = 2 * thr->niceness;
+  priority = sub_fp(priority, cpu);
+  priority =  sub_fp_int(priority, nice);
+  thr->priority = fp_to_int(priority);
+  if (thr->priority > PRI_MAX){
+    thr->priority = PRI_MAX;
+  }
+  if (thr->priority < PRI_MIN){
+    thr->priority = PRI_MIN;
+  }
+}
+
+/*Calculates a thread's new recent_cpu time given the formula:
+recent_cpu = (2*load_avg)/(2*load_avg + 1) * recent_cpu + nice.*/
+void CalcRecentCpuMLFQS(struct thread *thr){
+  if(t== idle_thread){
+    return;
+  }
+  int new_recent_cpu = mult_fp_int(load_avg, 2);
+  new_recent_cpu = div_fp(new_recent_cpu, add_fp_int(new_recent_cpu, 1));
+  new_recent_cpu = mult_fp(new_recent_cpu, thr->recent_cpu);
+  thr->recent_cpu = add_fp_int(new_recent_cpu, t->niceness);
+}
+
+/*Calculates the average number of threads ready to run over the past minute given the formula:
+load_avg = (59/60)*load_avg + (1/60)*ready_threads.
+ */
+
+void CalcLoadAvgMLFQS(void){
+  int ready_threads = list_size(&ready_list);
+  struct thread *curr_thr = thread_current();
+  if(curr_thr != idle_thread){
+    ready_threads= ready_threads + 1; 
+  }
+  int fraction1 = div_fp_int(int_to_fp(59),60);
+  int product1 = mult_fp(fraction, load_avg);
+  int product2 = div_fp_int(int_to_fp(ready_threads), 60); 
+  load_avg = add_fp(product1, product2);
+}
+
+void IncrementCpuMLFQS(void){
+  if(thread_current() == idle_thread){
+    return;
+  }
+  thread_current()->recent_cpu = add_fp_int(
+    thread_current()->recent_cpu, 1);
+}
+
+void RecalcPriorityMLFQS(void){
+  struct list_elem *element;
+  for (element = list_begin(&all_list); 
+       element != list_end(&all_list);
+       element = list_next(element))
+  {
+    struct thread *thr = list_entry(element, struct thread, allelem);
+    CalcRecentCpuMLFQS(thr);
+    CalcPriorityMLFQS(thr);
+  }
+}
