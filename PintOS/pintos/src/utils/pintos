@@ -250,7 +250,6 @@ sub set_disk {
 	$parts{$role}{SECTORS} = $pt{$role}{SECTORS};
     }
 }
-
 # Locates the files used to back each of the virtual disks,
 # and creates temporary disks.
 sub find_disks {
@@ -325,7 +324,6 @@ sub find_disks {
     unshift (@disks, $make_disk);
     die "can't use more than " . scalar (@disks) . "disks\n" if @disks > 4;
 }
-
 # Prepare the scratch disk for gets and puts.
 sub prepare_scratch_disk {
     return if !@gets && !@puts;
@@ -525,7 +523,6 @@ sub get_scratch_file {
 
     return 0;
 }
-
 # Running simulators.
 
 # Runs the selected simulator.
@@ -620,7 +617,7 @@ sub run_qemu {
       if $vga eq 'terminal';
     print "warning: qemu doesn't support jitter\n"
       if defined $jitter;
-    my (@cmd) = ('qemu');
+    my (@cmd) = ('qemu-system-x86_64');
     push (@cmd, '-hda', $disks[0]) if defined $disks[0];
     push (@cmd, '-hdb', $disks[1]) if defined $disks[1];
     push (@cmd, '-hdc', $disks[2]) if defined $disks[2];
@@ -734,7 +731,6 @@ EOF
     print join (' ', @cmd), "\n";
     xsystem (@cmd);
 }
-
 # Disk utilities.
 
 sub extend_file {
@@ -764,7 +760,6 @@ sub disk_geometry {
 	    H => 16,
 	    S => 63);
 }
-
 # Subprocess utilities.
 
 # run_command(@args)
@@ -908,7 +903,7 @@ sub get_load_average {
 # Calls setitimer to set a timeout, then execs what was passed to us.
 sub exec_setitimer {
     if (defined $timeout) {
-	if ($ ge 5.8.0) {
+	if ($^V ge 5.8.0) {
 	    eval "
               use Time::HiRes qw(setitimer ITIMER_VIRTUAL);
               setitimer (ITIMER_VIRTUAL, $timeout, 0);
@@ -922,16 +917,6 @@ sub exec_setitimer {
     }
     exec (@_);
     exit (1);
-}
-
-sub SIGVTALRM {
-    use Config;
-    my $i = 0;
-    foreach my $name (split(' ', $Config{sig_name})) {
-	return $i if $name eq 'VTALRM';
-	$i++;
-    }
-    return 0;
 }
 
 # find_in_path ($program)
