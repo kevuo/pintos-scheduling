@@ -63,6 +63,8 @@ static unsigned thread_ticks;   /* # of timer ticks since last yield. */
    Controlled by kernel command-line option "-o mlfqs". */
 bool thread_mlfqs;
 
+int load_avg;
+
 static void kernel_thread (thread_func *, void *aux);
 
 static void idle (void *aux UNUSED);
@@ -610,7 +612,7 @@ uint32_t thread_stack_ofs = offsetof (struct thread, stack);
 /*Calculates a thread's priority given the formula:
 priority = PRI_MAX - (recent_cpu / 4) - (nice * 2).*/
 void CalcPriorityMLFQS(struct thread *thr){
-  if(t== idle_thread){
+  if(thr== idle_thread){
     return;
   }
   int priority = int_to_fp(PRI_MAX);
@@ -618,7 +620,7 @@ void CalcPriorityMLFQS(struct thread *thr){
   int nice = 2 * thr->niceness;
   priority = sub_fp(priority, cpu);
   priority =  sub_fp_int(priority, nice);
-  thr->priority = fp_to_int(priority);
+  thr->priority = fp_to_int_round_zero(priority);
   if (thr->priority > PRI_MAX){
     thr->priority = PRI_MAX;
   }
@@ -630,13 +632,13 @@ void CalcPriorityMLFQS(struct thread *thr){
 /*Calculates a thread's new recent_cpu time given the formula:
 recent_cpu = (2*load_avg)/(2*load_avg + 1) * recent_cpu + nice.*/
 void CalcRecentCpuMLFQS(struct thread *thr){
-  if(t== idle_thread){
+  if(thr== idle_thread){
     return;
   }
   int new_recent_cpu = mult_fp_int(load_avg, 2);
   new_recent_cpu = div_fp(new_recent_cpu, add_fp_int(new_recent_cpu, 1));
   new_recent_cpu = mult_fp(new_recent_cpu, thr->recent_cpu);
-  thr->recent_cpu = add_fp_int(new_recent_cpu, t->niceness);
+  thr->recent_cpu = add_fp_int(new_recent_cpu, thr->niceness);
 }
 
 /*Calculates the average number of threads ready to run over the past minute given the formula:
@@ -650,7 +652,7 @@ void CalcLoadAvgMLFQS(void){
     ready_threads= ready_threads + 1; 
   }
   int fraction1 = div_fp_int(int_to_fp(59),60);
-  int product1 = mult_fp(fraction, load_avg);
+  int product1 = mult_fp(fraction1, load_avg);
   int product2 = div_fp_int(int_to_fp(ready_threads), 60); 
   load_avg = add_fp(product1, product2);
 }
