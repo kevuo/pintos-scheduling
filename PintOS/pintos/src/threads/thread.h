@@ -93,6 +93,10 @@ struct thread
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
+    /* Attributes for MLFQS*/
+    int niceness;
+    int recent_cpu;
+    
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
@@ -138,4 +142,11 @@ void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
+/*Additional functions*/
+
+void CalcPriorityMLFQS(struct thread *thr);
+void CalcRecentCpuMLFQS(struct thread *thr);
+void CalcLoadAvgMLFQS(void);
+void IncrementCpuMLFQS(void);
+void RecalcPriorityMLFQS(void);
 #endif /* threads/thread.h */
