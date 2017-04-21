@@ -1,19 +1,20 @@
 /* Tests timer_sleep(0), which should return immediately. */
 
 #include <stdio.h>
-#include "math.h"
 #include "tests/threads/tests.h"
 #include "threads/malloc.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
 #include "devices/timer.h"
 
-static void pruebahilos( int, int, int, int);
+static void pruebahilos(int, int, int, int);
 
 void
 test_hello_world (void) 
 {
 printf("%s\n", "Hello world from PINTOS!");
+pruebahilos (5,2,3,4);
+
 }
 
 /* Information about the test. */
@@ -85,19 +86,23 @@ pruebahilos (int t, int b, int l, int p)
       t->id = i;
       t->duration = (i + 1) * 10;
       t->iterations = 0;
-
+      
       snprintf (name, sizeof name, "thread %d", i);
       thread_create (name, PRI_DEFAULT, bound_operation, t);
     }
 
+  timer_sleep (100 + t * iterations * 10 + 100);
+
   /* Acquire the output lock in case some rogue thread is still
      running. */
   lock_acquire (&test.output_lock);
+    	printf("ha entrado aqui, %d\n", *output);
 
   /* Print completion order. */
   product = 0;
   for (op = output; op < test.output_pos; op++) 
     {
+    	printf("ha entrado,%d\n", *op);
       struct bound_thread *t;
       int new_prod;
 
@@ -109,19 +114,13 @@ pruebahilos (int t, int b, int l, int p)
       msg ("thread %d: duration=%d, iteration=%d, product=%d",
            t->id, t->duration, t->iterations, new_prod);
       
-      if (new_prod >= product)
-        product = new_prod;
-      else
-        fail ("thread %d woke up out of order (%d > %d)!",
-              t->id, product, new_prod);
+      // if (new_prod >= product)
+      //   product = new_prod;
+      // else
+      //   fail ("thread %d woke up out of order (%d > %d)!",
+      //         t->id, product, new_prod);
     }
 
-  /* Verify that we had the proper number of wakeups. */
-  for (i = 0; i < t; i++)
-    if (threads[i].iterations != iterations)
-      fail ("thread %d woke up %d times instead of %d",
-            i, threads[i].iterations, iterations);
-  
   lock_release (&test.output_lock);
   free (output);
   free (threads);
@@ -132,5 +131,20 @@ pruebahilos (int t, int b, int l, int p)
 static void
 bound_operation (void *t_) 
 {
+	struct bound_thread *t  = t_;
+	struct bound_test *test = t->test;
+	int i;
+
+	for (i =1; i <= test->iterations; i++)
+	  {
+	  	long double var1 = 19230986656.19230981231;
+	  	long double var2 = 19230981231.19230981231;
+	  	long double var3 = 19230981231.123123;
+	  	long double var4 = var1*var2/var3;
+	  	long double var5 = var4*99992312312.3453458907879;
+	  	lock_acquire (&test->output_lock);
+      *test->output_pos++ = t->id;
+      lock_release (&test->output_lock);
+	  }
 
 }

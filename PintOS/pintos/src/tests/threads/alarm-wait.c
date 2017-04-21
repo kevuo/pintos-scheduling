@@ -99,11 +99,15 @@ test_sleep (int thread_cnt, int iterations)
   /* Acquire the output lock in case some rogue thread is still
      running. */
   lock_acquire (&test.output_lock);
+  
+  printf("ha entrado aqui, %d\n", *output);
 
   /* Print completion order. */
   product = 0;
   for (op = output; op < test.output_pos; op++) 
     {
+            printf("ha entrado,%d\n", *op);
+
       struct sleep_thread *t;
       int new_prod;
 
@@ -123,10 +127,10 @@ test_sleep (int thread_cnt, int iterations)
     }
 
   /* Verify that we had the proper number of wakeups. */
-  for (i = 0; i < thread_cnt; i++)
-    if (threads[i].iterations != iterations)
-      fail ("thread %d woke up %d times instead of %d",
-            i, threads[i].iterations, iterations);
+   for (i = 0; i < thread_cnt; i++)
+     if (threads[i].iterations != iterations)
+       fail ("thread %d woke up %d times instead of %d",
+             i, threads[i].iterations, iterations);
   
   lock_release (&test.output_lock);
   free (output);
