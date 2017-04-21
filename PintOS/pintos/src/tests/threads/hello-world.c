@@ -10,13 +10,14 @@
 #include "devices/timer.h"
 
 static void pruebahilos(int, int, int, int);
-int thread_type =0;
+int thread_type;
+int cpu_bounded =0;
+int io_bounded =0;
 
 void
 test_hello_world (void) 
 {
-  pruebahilos (5,2,3,4);
-  thread_type = 0;
+  pruebahilos (5,0,3,30);
 }
 
 /* Information about the test. */
@@ -41,7 +42,7 @@ struct bound_thread
 static void bound_operation (void *);
 
 /* t: cantidad de hilos*/
-/* b: 1 si es I/O bounded, 0 si es CPU bounded */
+/* b: 0 si es I/O bounded, 1 si es CPU bounded */
 /* l: Archive donde se escribiran los logs */
 /* p: Procentaje de hilos I/O bounded */
 static void 
@@ -64,6 +65,15 @@ pruebahilos (int t, int b, int l, int p)
   msg ("thread 1 duerme 20 ticks cada vez, y asi en adelante.");
   msg ("Si es exitoso, el producto de la cuenta de iteraciones y ");
   msg ("duracion de dormido aparecera en orden no descendiente.");
+  
+  thread_type = b;
+  if (p != -1)
+  {
+    float divide = (float)p/100.0;
+    io_bounded = t* divide;
+    cpu_bounded = t* (1-divide);
+    thread_type = 0;
+  }
 
   /* Allocate memory. */
   threads = malloc (sizeof *threads * t);
@@ -98,13 +108,13 @@ pruebahilos (int t, int b, int l, int p)
   /* Acquire the output lock in case some rogue thread is still
      running. */
   lock_acquire (&test.output_lock);
-      printf("ha entrado aqui, %d\n", *output);
+      printf("", *output);
 
   /* Print completion order. */
   product = 0;
   for (op = output; op < test.output_pos; op++) 
     {
-      printf("ha entrado,%d\n", *op);
+      printf("", *op);
       struct bound_thread *t;
       int new_prod;
 
@@ -115,12 +125,6 @@ pruebahilos (int t, int b, int l, int p)
         
       msg ("thread %d: duration=%d, iteration=%d, product=%d",
            t->id, t->duration, t->iterations, new_prod);
-      
-      // if (new_prod >= product)
-      //   product = new_prod;
-      // else
-      //   fail ("thread %d woke up out of order (%d > %d)!",
-      //         t->id, product, new_prod);
     }
 
   lock_release (&test.output_lock);
@@ -136,7 +140,44 @@ bound_operation (void *t_)
   struct bound_thread *t  = t_;
   struct bound_test *test = t->test;
   int i;
-  printf("living is easy with %d\n", thread_type);
+  printf("don't take life too seriously %d\n", io_bounded);
+  printf("enjoy what you've got %d\n", cpu_bounded);
+  if ( io_bounded > 0 || cpu_bounded > 0 ) 
+  {
+    if (io_bounded >0)
+    {
+      for (i =1; i <= test->iterations; i++)
+      {
+        char* io_operation;
+        io_operation =  malloc(16384);
+        printf("Allocated %lu bytes.\n", sizeof(*io_operation)*16384 );
+        lock_acquire (&test->output_lock);
+        *test->output_pos++ = t->id;
+        lock_release (&test->output_lock);
+      }
+      io_bounded--;  
+      return;    
+    }
+    if (cpu_bounded >0)
+    {
+      for (i =1; i <= test->iterations; i++)
+      {
+        long double var1 = 19230986656.19230981231;
+        long double var2 = 19230981231.19230981231;
+        long double var3 = 19230981231.123123;
+        long double var4 = var1*var2/var3;
+        long double var5 = var4*99992312312.3453458907879;
+        printf("Operation result: %lu\n",var5);
+
+        lock_acquire (&test->output_lock);
+        *test->output_pos++ = t->id;
+        lock_release (&test->output_lock);
+      }    
+      cpu_bounded--; 
+    }
+    return;
+  }
+
   if (thread_type ==1)
   { 
     for (i =1; i <= test->iterations; i++)
@@ -157,8 +198,9 @@ bound_operation (void *t_)
   { 
     for (i =1; i <= test->iterations; i++)
     {
-    char* io_bound =  malloc(16384 *90);
-
+      char* io_operation;
+      io_operation =  malloc(16384);
+      printf("Allocated %lu bytes.\n", sizeof(*io_operation)*16384 );
       lock_acquire (&test->output_lock);
       *test->output_pos++ = t->id;
       lock_release (&test->output_lock);
