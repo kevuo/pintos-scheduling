@@ -1,3 +1,5 @@
+
+
 /* Tests timer_sleep(0), which should return immediately. */
 
 #include <stdio.h>
@@ -8,13 +10,13 @@
 #include "devices/timer.h"
 
 static void pruebahilos(int, int, int, int);
+int thread_type =0;
 
 void
 test_hello_world (void) 
 {
-printf("%s\n", "Hello world from PINTOS!");
-pruebahilos (5,2,3,4);
-
+  pruebahilos (5,2,3,4);
+  thread_type = 0;
 }
 
 /* Information about the test. */
@@ -96,13 +98,13 @@ pruebahilos (int t, int b, int l, int p)
   /* Acquire the output lock in case some rogue thread is still
      running. */
   lock_acquire (&test.output_lock);
-    	printf("ha entrado aqui, %d\n", *output);
+      printf("ha entrado aqui, %d\n", *output);
 
   /* Print completion order. */
   product = 0;
   for (op = output; op < test.output_pos; op++) 
     {
-    	printf("ha entrado,%d\n", *op);
+      printf("ha entrado,%d\n", *op);
       struct bound_thread *t;
       int new_prod;
 
@@ -131,20 +133,35 @@ pruebahilos (int t, int b, int l, int p)
 static void
 bound_operation (void *t_) 
 {
-	struct bound_thread *t  = t_;
-	struct bound_test *test = t->test;
-	int i;
+  struct bound_thread *t  = t_;
+  struct bound_test *test = t->test;
+  int i;
+  printf("living is easy with %d\n", thread_type);
+  if (thread_type ==1)
+  { 
+    for (i =1; i <= test->iterations; i++)
+    {
+      long double var1 = 19230986656.19230981231;
+      long double var2 = 19230981231.19230981231;
+      long double var3 = 19230981231.123123;
+      long double var4 = var1*var2/var3;
+      long double var5 = var4*99992312312.3453458907879;
+      printf("Operation result: %lu\n",var5);
 
-	for (i =1; i <= test->iterations; i++)
-	  {
-	  	long double var1 = 19230986656.19230981231;
-	  	long double var2 = 19230981231.19230981231;
-	  	long double var3 = 19230981231.123123;
-	  	long double var4 = var1*var2/var3;
-	  	long double var5 = var4*99992312312.3453458907879;
-	  	lock_acquire (&test->output_lock);
+      lock_acquire (&test->output_lock);
       *test->output_pos++ = t->id;
       lock_release (&test->output_lock);
-	  }
+    }
+  } 
+  if (thread_type ==0)
+  { 
+    for (i =1; i <= test->iterations; i++)
+    {
+    char* io_bound =  malloc(16384 *90);
 
+      lock_acquire (&test->output_lock);
+      *test->output_pos++ = t->id;
+      lock_release (&test->output_lock);
+    }
+  }  
 }
