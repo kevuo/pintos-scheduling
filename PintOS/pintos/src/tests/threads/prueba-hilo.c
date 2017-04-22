@@ -12,7 +12,6 @@ int thread_type;
 int cpu_bounded =0;
 int io_bounded =0;
 char log [256];
-int duracion_hilos [5];
 
 void
 test_prueba_hilo (void) 
@@ -36,7 +35,7 @@ struct bound_thread
   {
     struct bound_test *test;     /* Info shared between all threads. */
     int id;                     /* Bound ID. */
-    int duration;               /* Number of ticks to sleep. */
+    int duration;               /* Execution time. */
     int iterations;             /* Iterations counted so far. */
   };
 static void bound_operation (void *);
@@ -50,7 +49,6 @@ pruebahilos (int t, int b, char* l, int p)
 {
   ASSERT(!(t>25));
   
-//  duracion_hilos[t];
   int time_execution=0;
 
   struct bound_test test;
@@ -59,9 +57,6 @@ pruebahilos (int t, int b, char* l, int p)
   int *output, *op;
   int product;
   int i;
-
-  /* This test does not work with the MLFQS. */
-  /*  ASSERT (!thread_mlfqs); */
 
   msg ("Creando %d threads con %d iteraciones.", t, iterations);
   msg ("Creando log en %s", l);
@@ -102,6 +97,7 @@ pruebahilos (int t, int b, char* l, int p)
       t->iterations = 0;
       snprintf(log + strlen(log), sizeof log, " El id del hilo %d es %d." ,i, t->id);
 
+      /* Save thread name in the name buffer */
       snprintf (name, sizeof name, "thread %d", i);
       thread_create (name, PRI_DEFAULT, bound_operation, t);
     }
@@ -136,15 +132,13 @@ pruebahilos (int t, int b, char* l, int p)
   free (output);
   free (threads);
 
-
+  /* Save total execution time to log*/
   snprintf(log + strlen(log), sizeof log, " El tiempo de ejecucion promedio de los hilos fue: %d.",
     time_execution);
 
   printf("%s\n", log);
 
 }
-
-
 
 /* Bound thread. */
 static void
@@ -157,8 +151,10 @@ bound_operation (void *t_)
   int64_t tiempo_comienzo_hilo = timer_ticks ();
   timer_sleep (3);
 
+  /* Case where the p (percentage) is given*/
   if ( io_bounded > 0 || cpu_bounded > 0 ) 
   {
+    /* If there are I/O bound operations remaining */
     if (io_bounded >0)
     {
       for (i =1; i <= test->iterations; i++)
@@ -172,14 +168,18 @@ bound_operation (void *t_)
         lock_release (&test->output_lock);
       }
       io_bounded--;  
-
+  
+      /* Compute time of execution, save it in thre thread member: duration */
       int64_t tiempo_finalizacion = timer_elapsed (tiempo_comienzo_hilo);
-      duracion_hilos[t->id] = tiempo_finalizacion;
       t->duration = tiempo_finalizacion;
+   
+      /* Store log data in the log buffer "log" */
       snprintf(log + strlen(log), sizeof log, " El hilo %d ha durado: %d ticks.", 
       t->id, tiempo_finalizacion);
       return;    
     }
+
+    /* If there are CPU bound operations remaining */
     if (cpu_bounded >0)
     {
       for (i =1; i <= test->iterations; i++)
@@ -197,16 +197,21 @@ bound_operation (void *t_)
       }    
       cpu_bounded--; 
     } 
+
+    /* Compute time of execution, save it in thre thread member: duration */
     int64_t tiempo_finalizacion = timer_elapsed (tiempo_comienzo_hilo);
-    duracion_hilos[t->id] = tiempo_finalizacion;
+    t->duration = tiempo_finalizacion;
+    
+    /* Store log data in the log buffer "log" */
     snprintf(log + strlen(log), sizeof log, " El hilo %d ha durado: %d ticks.", 
     t->id, tiempo_finalizacion);
     return;
   }
-
+  
+  /* Case where the b is given */
+  /* All operations are CPU bounded*/
   if (thread_type ==1)
   { 
-    printf("entro\n");
     for (i =1; i <= test->iterations; i++)
     {
       unsigned long long var1 = 19230986656;
@@ -221,6 +226,8 @@ bound_operation (void *t_)
       lock_release (&test->output_lock);
     }
   } 
+
+  /* All operations are I/O bounded*/
   if (thread_type ==0)
   { 
     for (i =1; i <= test->iterations; i++)
@@ -234,9 +241,11 @@ bound_operation (void *t_)
       lock_release (&test->output_lock);
     }
   }
+  /* Compute time of execution, save it in thre thread member: duration */
   int64_t tiempo_finalizacion = timer_elapsed (tiempo_comienzo_hilo);
-  duracion_hilos[t->id] = tiempo_finalizacion;
+  t->duration = tiempo_finalizacion;
 
+  /* Store log data in the log buffer "log" */
   snprintf(log + strlen(log), sizeof log, " El hilo %d ha durado: %d ticks.", 
     t->id, tiempo_finalizacion);
 }
