@@ -6,20 +6,78 @@
 				   
 ---- GRUPO ----
 
-FirstName LastName <email@domain.example>
-FirstName LastName <email@domain.example>
-FirstName LastName <email@domain.example>
+Kevin Umaña <kevgiso@hotmail.com>
+Nicoĺás Jiménez <nicolas.j2007@gmail.com>
 
-Calendarizador <tipo de calendarizador>
+Calendarizador <FCFS>
 =======================================
 
----- Estructuras de datos ----
+La implementación de este calendarizador no utilizó ninguna nueva estructura ni variable para su uso, a excepción de la bandera FCFS, la cual se definió para avisar al SO del uso del mismo. La única modificación que se hizo fue a la hora de ceder el cpu al siguiente hilo listo para ser ejecutado pues este algoritmo no lo realiza.
 
->> Copie la declaracion de cada estructura nueva utilizada por su 
-codigo, variables globales o estaticas, `struct', `typedef', etc.
 
->> Explique las estructuras citadas anteriormente en menos de 30 
-palabras cada una.
+Calendarizador <SJF>
+=======================================
+
+
+Para la implementación de este algoritmo resultó necesario agregar una atributo "execution_time" al "struct" de thread.
+
+La idea de esta propiedad consiste en hacer un cálculo durante la creación del hilo para determinar una estimación del tiempo de ejecución para dicho hilo. Basándose en dicho cálculo, se asigna su prioridad en la lista de procesos listos para ejecutarse. Tendrá una prioridad más alta el proceso con menor duración (burst time).
+
+Se agregó la función:
+
+int CalcBurstTime (struct thread *thr);
+	-Función encargada de estimar el tiempo de procesamiento de un hilo y asignárselo al mismo.
+
+
+Calendarizador <Round-robin>
+=======================================
+
+Para este calendarizador se basó en la implementación que traía el sistema operativo PintOS. Se incluyó la bandera RR para determinar su uso y se aumentó el quantum a un valor de 5. 
+
+Calendarizador <MLFQS>
+=======================================
+
+En el archivo thread.h, se agregaron las siguientes variables al struct "thread":
+
+   int nice;
+   - El valor actual de nice del hilo. 
+
+   int recent_cpu;
+   - El valor más reciente de recent_cpu que fue calculado.
+
+En el archivo thread.c, se agrega la variable global:
+
+   int load_avg;
+   - Se agrega el promedio de carga de todos los hilos por ser ejecutados, más recientemente calculado.
+
+Las funciones agregadas fueron las siguientes:
+
+void CalcPriorityMLFQS(struct thread *thr);
+	-Se encarga de calcular la prioridad del hilo dado basándose en la fórmula: 
+
+	priority = PRI_MAX - (recent_cpu / 4) - (nice * 2)
+
+void CalcRecentCpuMLFQS(struct thread *thr);
+	- Se encarga de calcular el parámetro recent_cpu del hilo especificado, basándose en la fórmula:
+
+	recent_cpu = (2*load_avg)/(2*load_avg + 1) * recent_cpu + nice.
+
+void CalcLoadAvgMLFQS(void);
+	- Se encarga de calcular el número promedio de hilos listos para ser ejecutados pasado el último minuto, según la fórmula:
+
+	load_avg = (59/60)*load_avg + (1/60)*ready_threads	
+
+void IncrementCpuMLFQS(void);
+	- Esta función se encarga de incrementar el valor de recent_CPU en 1 al hilo en ejecución.
+
+void CalcRecentCpuAllMLFQS(void);
+	- Calcula el recent_cpu para todos los hilos en ejecución.
+
+void CalcPriorityAllMLFQS (void);
+	- Actualiza la prioridad de todos los hilos en ejecución tras el cambio en el recent_cpu realizado por el anterior algoritmo.
+
+void sort_threads (struct list *l);
+	-Función que ordena la lista proveída de manera que los elementos de la misma (procesos) con mayor prioridad, se coloquen de primeros en la lista.
 
 
 ---- ALGORITMOS ----
@@ -34,6 +92,8 @@ el nombre de las variables utilizadas y funciones.
 thread_set_priority() y explique como su algoritmo lo resuelve. 
 Justifique por que un lock podria o no podria funcionar para este 
 algoritmo
+
+Existe una condición de carrera en dicha función debido a que es necesario realizar lecturas y escrituras sobre la prioridad del hilo, la cual se actualiza cada 4 ticks del manejador de interrupciones. De esta manera, mientras la variable de prioridad del hilo se actualiza, el manejador de interrupciones también modifica la variable de prioridad.
 
 ---- JUSTIFICACION ----
 >>Describa la razon por la que se decidio implementar este diseño 

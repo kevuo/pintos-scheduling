@@ -18,7 +18,7 @@ test_priority_donate_lower (void)
   struct lock lock;
 
   /* This test does not work with the MLFQS. */
-  ASSERT (!thread_mlfqs);
+  ASSERT (scheduling_flag != MLFQS);
 
   /* Make sure our priority is the default. */
   ASSERT (thread_get_priority () == PRI_DEFAULT);

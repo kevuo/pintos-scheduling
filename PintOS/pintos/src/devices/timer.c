@@ -73,6 +73,7 @@ timer_ticks (void)
   enum intr_level old_level = intr_disable ();
   int64_t t = ticks;
   intr_set_level (old_level);
+  barrier ();
   return t;
 }
 
@@ -166,12 +167,30 @@ timer_print_stats (void)
   printf ("Timer: %"PRId64" ticks\n", timer_ticks ());
 }
 
+
 /* Timer interrupt handler. */
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
   thread_tick ();
+
+  /* MLFQS interrupts*/
+  if (scheduling_flag == MLFQS)
+  {
+    IncrementCpuMLFQS ();
+    if (ticks % TIMER_FREQ == 0)
+    {
+     CalcLoadAvgMLFQS ();
+     CalcRecentCpuAllMLFQS ();
+    }
+    else if (ticks % 4 == 0)
+    {
+      CalcPriorityMLFQS (thread_current ());
+    }
+    /* */
+  }
+
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer

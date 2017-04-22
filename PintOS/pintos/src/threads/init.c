@@ -255,8 +255,14 @@ parse_options (char **argv)
 #endif
       else if (!strcmp (name, "-rs"))
         random_init (atoi (value));
+      else if (!strcmp (name, "-fcfs"))
+        scheduling_flag = FCFS;
+      else if (!strcmp (name, "-sjf"))
+        scheduling_flag = SJF;
+      else if (!strcmp (name, "-rr"))
+        scheduling_flag = RR;
       else if (!strcmp (name, "-mlfqs"))
-        thread_mlfqs = true;
+        scheduling_flag = MLFQS;
 #ifdef USERPROG
       else if (!strcmp (name, "-ul"))
         user_page_limit = atoi (value);

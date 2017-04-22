@@ -70,7 +70,7 @@ test_mlfqs_fair (int thread_cnt, int nice_min, int nice_step)
   int nice;
   int i;
 
-  ASSERT (thread_mlfqs);
+  ASSERT (scheduling_flag == MLFQS);
   ASSERT (thread_cnt <= MAX_THREAD_CNT);
   ASSERT (nice_min >= -10);
   ASSERT (nice_step >= 0);
@@ -97,8 +97,8 @@ test_mlfqs_fair (int thread_cnt, int nice_min, int nice_step)
     }
   msg ("Starting threads took %"PRId64" ticks.", timer_elapsed (start_time));
 
-  msg ("Sleeping 40 seconds to let threads run, please wait...");
-  timer_sleep (40 * TIMER_FREQ);
+  msg ("Sleeping 30 seconds to let threads run, please wait...");
+  timer_sleep (30 * TIMER_FREQ);
   
   for (i = 0; i < thread_cnt; i++)
     msg ("Thread %d received %d ticks.", i, info[i].tick_count);

@@ -24,6 +24,13 @@ typedef int tid_t;
 #define PRI_DEFAULT 31                  /* Default priority. */
 #define PRI_MAX 63                      /* Highest priority. */
 
+/* Flag definition. */
+
+#define FCFS 0
+#define SJF 1
+#define RR 2
+#define MLFQS 3
+
 /* A kernel thread or user process.
 
    Each thread structure is stored in its own 4 kB page.  The
@@ -88,15 +95,19 @@ struct thread
     char name[16];                      /* Name (for debugging purposes). */
     uint8_t *stack;                     /* Saved stack pointer. */
     int priority;                       /* Priority. */
+
     struct list_elem allelem;           /* List element for all threads list. */
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
     /* Attributes for MLFQS*/
-    int niceness;
+    int nice;
     int recent_cpu;
     
+    /*Attribute for SJF*/
+    int execution_time;                 /* Approximated processing time. */                
+
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
@@ -109,7 +120,15 @@ struct thread
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
    Controlled by kernel command-line option "-o mlfqs". */
-extern bool thread_mlfqs;
+/*extern bool thread_mlfqs;*/
+
+/* Flag in charge of choosing the scheduling algorithm to be used.
+   0: FCFS
+   1: SJF
+   2: RR
+   3: MLFQS*/
+
+extern int scheduling_flag;
 
 void thread_init (void);
 void thread_start (void);
@@ -148,5 +167,12 @@ void CalcPriorityMLFQS(struct thread *thr);
 void CalcRecentCpuMLFQS(struct thread *thr);
 void CalcLoadAvgMLFQS(void);
 void IncrementCpuMLFQS(void);
-void RecalcPriorityMLFQS(void);
+void CalcRecentCpuAllMLFQS(void);
+void CalcPriorityAllMLFQS (void);
+void sort_threads (struct list *l);
+
+/*SJF*/
+int CalcBurstTime (struct thread *thr);
+
+
 #endif /* threads/thread.h */

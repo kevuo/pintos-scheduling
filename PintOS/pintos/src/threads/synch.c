@@ -108,15 +108,33 @@ sema_try_down (struct semaphore *sema)
 void
 sema_up (struct semaphore *sema) 
 {
+  struct thread *wakeup;
+  struct thread *curr;
+  
   enum intr_level old_level;
 
   ASSERT (sema != NULL);
-
+  /**/
+  wakeup = NULL;
+  curr = thread_current ();
+  sort_threads (&sema->waiters);
+  /**/
   old_level = intr_disable ();
   if (!list_empty (&sema->waiters)) 
-    thread_unblock (list_entry (list_pop_front (&sema->waiters),
-                                struct thread, elem));
+    /*thread_unblock (list_entry (list_pop_front (&sema->waiters),
+                                struct thread, elem));*/
+  {
+    wakeup = list_entry (list_pop_front (&sema->waiters), struct thread, elem);
+    thread_unblock (wakeup);
+  }
+
   sema->value++;
+
+  if (wakeup != NULL && wakeup->priority > curr->priority)
+  {
+    thread_yield ();
+  }
+
   intr_set_level (old_level);
 }
 
@@ -179,6 +197,9 @@ lock_init (struct lock *lock)
 
   lock->holder = NULL;
   sema_init (&lock->semaphore, 1);
+  /**/
+  lock->lock_priority = PRI_MIN -1; 
+  /**/
 }
 
 /* Acquires LOCK, sleeping until it becomes available if
@@ -227,7 +248,7 @@ lock_try_acquire (struct lock *lock)
    handler. */
 void
 lock_release (struct lock *lock) 
-{
+{ 
   ASSERT (lock != NULL);
   ASSERT (lock_held_by_current_thread (lock));
 
