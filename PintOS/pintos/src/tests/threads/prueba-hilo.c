@@ -15,9 +15,9 @@ char log [256];
 int duracion_hilos [5];
 
 void
-test_hello_world (void) 
+test_prueba_hilo (void) 
 {
-  pruebahilos (5,0,"log.txt",30);
+  pruebahilos (8,0,"log.txt",45);
 }
 
 /* Information about the test. */
@@ -136,14 +136,8 @@ pruebahilos (int t, int b, char* l, int p)
   free (output);
   free (threads);
 
- // printf("size of duration %d\n", sizeof(duracion_hilos));
- // for (i = 0; i< t; i++)
-  //{
-  //  time_execution += duracion_hilos[i];
-  //  printf("tiempo ejecucion individual  %d\n", duracion_hilos[i]);
- // }
-//  float average_time_execution = (int) time_execution / (float)t;
-  snprintf(log + strlen(log), sizeof log, " El tiempo de ejecucion promedio de los hilos fue: %f.",
+
+  snprintf(log + strlen(log), sizeof log, " El tiempo de ejecucion promedio de los hilos fue: %d.",
     time_execution);
 
   printf("%s\n", log);
@@ -159,7 +153,7 @@ bound_operation (void *t_)
   struct bound_thread *t  = t_;
   struct bound_test *test = t->test;
   int i;
-
+  printf("El hilo %d ha comenzado.\n", t->id);
   int64_t tiempo_comienzo_hilo = timer_ticks ();
   timer_sleep (3);
 
@@ -171,7 +165,8 @@ bound_operation (void *t_)
       {
         char* io_operation;
         io_operation =  malloc(16384);
-        printf("Allocated %lu bytes.\n", sizeof(*io_operation)*16384 );
+        printf("Allocated %lu bytes of thread %d. \n", sizeof(*io_operation)*16384, t->id );
+        
         lock_acquire (&test->output_lock);
         *test->output_pos++ = t->id;
         lock_release (&test->output_lock);
@@ -180,7 +175,6 @@ bound_operation (void *t_)
 
       int64_t tiempo_finalizacion = timer_elapsed (tiempo_comienzo_hilo);
       duracion_hilos[t->id] = tiempo_finalizacion;
-  printf("Impresion de duracionhilos: %d y %d\n ", t->id, duracion_hilos[t->id]);
       t->duration = tiempo_finalizacion;
       snprintf(log + strlen(log), sizeof log, " El hilo %d ha durado: %d ticks.", 
       t->id, tiempo_finalizacion);
@@ -190,12 +184,12 @@ bound_operation (void *t_)
     {
       for (i =1; i <= test->iterations; i++)
       {
-        long double var1 = 19230986656.19230981231;
-        long double var2 = 19230981231.19230981231;
-        long double var3 = 19230981231.123123;
-        long double var4 = var1*var2/var3;
-        long double var5 = var4*99992312312.3453458907879;
-        printf("Operation result: %ld\n",var5);
+        unsigned long long var1 = 19230986656;
+        unsigned long long var2 = 19230981231;
+        unsigned long long var3 = 19230981231;
+        unsigned long long var4 = var1*var2/var3;
+        unsigned long long var5 = var4*99992312312;
+        printf("Operation result: %llu of thread %d.\n",var5, t->id );
 
         lock_acquire (&test->output_lock);
         *test->output_pos++ = t->id;
@@ -205,8 +199,6 @@ bound_operation (void *t_)
     } 
     int64_t tiempo_finalizacion = timer_elapsed (tiempo_comienzo_hilo);
     duracion_hilos[t->id] = tiempo_finalizacion;
-  printf("Impresion de duracionhilos: %d y %d\n ", t->id, duracion_hilos[t->id]);
-t->duration = tiempo_finalizacion;
     snprintf(log + strlen(log), sizeof log, " El hilo %d ha durado: %d ticks.", 
     t->id, tiempo_finalizacion);
     return;
@@ -214,14 +206,15 @@ t->duration = tiempo_finalizacion;
 
   if (thread_type ==1)
   { 
+    printf("entro\n");
     for (i =1; i <= test->iterations; i++)
     {
-      long double var1 = 19230986656.19230981231;
-      long double var2 = 19230981231.19230981231;
-      long double var3 = 19230981231.123123;
-      long double var4 = var1*var2/var3;
-      long double var5 = var4*99992312312.3453458907879;
-      printf("Operation result: %ld\n",var5);
+      unsigned long long var1 = 19230986656;
+      unsigned long long var2 = 19230981231;
+      unsigned long long var3 = 19230981231;
+      unsigned long long var4 = var1*var2/var3;
+      unsigned long long var5 = var4*99992312312;
+      printf("Operation result: %llu of thread %d.\n",var5, t->id );
 
       lock_acquire (&test->output_lock);
       *test->output_pos++ = t->id;
@@ -234,7 +227,7 @@ t->duration = tiempo_finalizacion;
     {
       char* io_operation;
       io_operation =  malloc(16384);
-      printf("Allocated %lu bytes.\n", sizeof(*io_operation)*16384 );
+      printf("Allocated %lu bytes of thread %d.\n", sizeof(*io_operation)*16384, t->id );
 
       lock_acquire (&test->output_lock);
       *test->output_pos++ = t->id;
@@ -243,8 +236,7 @@ t->duration = tiempo_finalizacion;
   }
   int64_t tiempo_finalizacion = timer_elapsed (tiempo_comienzo_hilo);
   duracion_hilos[t->id] = tiempo_finalizacion;
-  printf("Impresion de duracionhilos: %d y %d\n ", t->id, duracion_hilos[t->id]);
-  t->duration = tiempo_finalizacion;
+
   snprintf(log + strlen(log), sizeof log, " El hilo %d ha durado: %d ticks.", 
     t->id, tiempo_finalizacion);
 }
