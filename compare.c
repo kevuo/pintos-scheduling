@@ -37,23 +37,12 @@ int Search_in_File(char *fname, char *str) {
    	return(0);
 }
 
+int main() {
 
-//Our main function.
-int main(int argc, char *argv[]) {
-	int result, errno;
+	int result1, result2, result3, result4;
 
-	if(argc < 3 || argc > 3) {
-		Usage(argv[0]);
-		exit(1);
-	}
-
-	system("clear");
-
-	result = Search_in_File("log.txt", "fue:");
-	if(result == -1) {
-		perror("Error");
-		printf("Error number = %d\n", errno);
-		exit(1);
-	}
+	result1 = Search_in_File("log.txt", "fue:");
+	result2 = Search_in_File("log2.txt", "fue:");
+	result2 = Search_in_File("log32.txt", "fue:");
 	return(0);
 }
