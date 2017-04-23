@@ -1,0 +1,105 @@
+qemu-system-x86_64 -hda /tmp/O2Vr4peuX9.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading............
+Kernel command line: -rr run prueba-hilo
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Round-robin flag was triggered.
+Calibrating timer...  419,020,800 loops/s.
+Boot complete.
+Executing 'prueba-hilo':
+(prueba-hilo) begin
+(prueba-hilo) Creando 8 threads con 5 iteraciones.
+(prueba-hilo) Creando log en log.txt
+El hilo 0 ha comenzado.
+El hilo 1 ha comenzado.
+El hilo 2 ha comenzado.
+El hilo 3 ha comenzado.
+El hilo 4 ha comenzado.
+El hilo 5 ha comenzado.
+El hilo 6 ha comenzado.
+El hilo 7 ha comenzado.
+Operation result: 4658072674374400096 of thread 7.
+Operation result: 4658072674374400096 of thread 7.
+Operation result: 4658072674374400096 of thread 7.
+Operation result: 4658072674374400096 of thread 7.
+Operation result: 4658072674374400096 of thread 7.
+Operation result: 4658072674374400096 of thread 0.
+Operation result: 4658072674374400096 of thread 0.
+Operation result: 4658072674374400096 of thread 0.
+Operation result: 4658072674374400096 of thread 0.
+Operation result: 4658072674374400096 of thread 0.
+Operation result: 4658072674374400096 of thread 1.
+Operation result: 4658072674374400096 of thread 1.
+Operation result: 4658072674374400096 of thread 1.
+Operation result: 4658072674374400096 of thread 1.
+Operation result: 4658072674374400096 of thread 1.
+Operation result: 4658072674374400096 of thread 2.
+Operation result: 4658072674374400096 of thread 2.
+Operation result: 4658072674374400096 of thread 2.
+Operation result: 4658072674374400096 of thread 2.
+Operation result: 4658072674374400096 of thread 2.
+Operation result: 4658072674374400096 of thread 3.
+Operation result: 4658072674374400096 of thread 3.
+Operation result: 4658072674374400096 of thread 3.
+Operation result: 4658072674374400096 of thread 3.
+Operation result: 4658072674374400096 of thread 3.
+Operation result: 4658072674374400096 of thread 4.
+Operation result: 4658072674374400096 of thread 4.
+Operation result: 4658072674374400096 of thread 4.
+Operation result: 4658072674374400096 of thread 4.
+Operation result: 4658072674374400096 of thread 4.
+Operation result: 4658072674374400096 of thread 5.
+Operation result: 4658072674374400096 of thread 5.
+Operation result: 4658072674374400096 of thread 5.
+Operation result: 4658072674374400096 of thread 5.
+Operation result: 4658072674374400096 of thread 5.
+Operation result: 4658072674374400096 of thread 6.
+Operation result: 4658072674374400096 of thread 6.
+Operation result: 4658072674374400096 of thread 6.
+Operation result: 4658072674374400096 of thread 6.
+Operation result: 4658072674374400096 of thread 6.
+(prueba-hilo) thread 7: iteration=1
+(prueba-hilo) thread 7: iteration=2
+(prueba-hilo) thread 7: iteration=3
+(prueba-hilo) thread 7: iteration=4
+(prueba-hilo) thread 7: iteration=5
+(prueba-hilo) thread 0: iteration=1
+(prueba-hilo) thread 0: iteration=2
+(prueba-hilo) thread 0: iteration=3
+(prueba-hilo) thread 0: iteration=4
+(prueba-hilo) thread 0: iteration=5
+(prueba-hilo) thread 1: iteration=1
+(prueba-hilo) thread 1: iteration=2
+(prueba-hilo) thread 1: iteration=3
+(prueba-hilo) thread 1: iteration=4
+(prueba-hilo) thread 1: iteration=5
+(prueba-hilo) thread 2: iteration=1
+(prueba-hilo) thread 2: iteration=2
+(prueba-hilo) thread 2: iteration=3
+(prueba-hilo) thread 2: iteration=4
+(prueba-hilo) thread 2: iteration=5
+(prueba-hilo) thread 3: iteration=1
+(prueba-hilo) thread 3: iteration=2
+(prueba-hilo) thread 3: iteration=3
+(prueba-hilo) thread 3: iteration=4
+(prueba-hilo) thread 3: iteration=5
+(prueba-hilo) thread 4: iteration=1
+(prueba-hilo) thread 4: iteration=2
+(prueba-hilo) thread 4: iteration=3
+(prueba-hilo) thread 4: iteration=4
+(prueba-hilo) thread 4: iteration=5
+(prueba-hilo) thread 5: iteration=1
+(prueba-hilo) thread 5: iteration=2
+(prueba-hilo) thread 5: iteration=3
+(prueba-hilo) thread 5: iteration=4
+(prueba-hilo) thread 5: iteration=5
+(prueba-hilo) thread 6: iteration=1
+(prueba-hilo) thread 6: iteration=2
+(prueba-hilo) thread 6: iteration=3
+(prueba-hilo) thread 6: iteration=4
+(prueba-hilo) thread 6: iteration=5
+Log del set de hilos. Creando 8 hilos. 0 I/O bounded y 8 CPU bounded. El id del hilo 0 es 0. El id del hilo 1 es 1. El id del hilo 2 es 2. El id del hilo 3 es 3. El id del hilo 4 es 4. El id del hilo 5 es 5. El id del hilo 6 es 6. El id del hilo 7 es 7. El hilo 7 ha durado: 3 ticks. El hilo 0 ha durado: 4 ticks. El hilo 1 ha durado: 5 ticks. El hilo 2 ha durado: 6 ticks. El hilo 3 ha durado: 7 ticks. El hilo 4 ha durado: 8 ticks. El hilo 5 ha durado: 9 ticks. El hilo 6 ha durado: 10 ticks. El tiempo de ejecucion promedio de los hilos fue: 260
+(prueba-hilo) end
+Execution of 'prueba-hilo' complete.
