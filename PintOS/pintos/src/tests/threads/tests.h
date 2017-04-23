@@ -10,7 +10,7 @@ extern test_func test_alarm_multiple;
 extern test_func test_alarm_simultaneous;
 extern test_func test_alarm_priority;
 extern test_func test_alarm_zero;
-extern test_func test_hello_world;
+extern test_func test_prueba_hilo;
 extern test_func test_alarm_negative;
 extern test_func test_priority_change;
 extern test_func test_priority_donate_one;
@@ -39,4 +39,3 @@ void fail (const char *, ...);
 void pass (void);
 
 #endif /* tests/threads/tests.h */
-
