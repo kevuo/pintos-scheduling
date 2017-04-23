@@ -121,6 +121,8 @@ thread_init (void)
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
 
+  load_avg = int_to_fp(LOAD_AVG_DEFAULT);
+
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -135,8 +137,7 @@ thread_start (void)
 
   if (scheduling_flag == MLFQS)
   {
-      printf("MLFQS flag was triggered.\n");
-      load_avg = int_to_fp(LOAD_AVG_DEFAULT); 
+      printf("MLFQS flag was triggered.\n"); 
   }
   else if (scheduling_flag == SJF)
   {
@@ -300,13 +301,18 @@ thread_unblock (struct thread *t)
 
   if (scheduling_flag == SJF)
   {
+    t->execution_time = CalcBurstTime (t);
     list_insert_ordered (&ready_list, &t->elem, thread_sort_burst, NULL);
         
-  }else if (scheduling_flag == MLFQS){
+  }
+  else if (scheduling_flag == MLFQS){
 
     list_insert_ordered (&ready_list, &t->elem, thread_sort_priority, NULL);
   }
-
+  else
+  {
+    list_push_back (&ready_list, &t->elem);
+  }
   t->status = THREAD_READY;
   intr_set_level (old_level);
 }
