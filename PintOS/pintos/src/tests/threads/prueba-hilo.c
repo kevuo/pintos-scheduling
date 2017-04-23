@@ -16,7 +16,7 @@ char log [256];
 void
 test_prueba_hilo (void) 
 {
-  pruebahilos (8,0,"log.txt",45);
+  pruebahilos (8,1,"log.txt",0);
 }
 
 /* Information about the test. */
@@ -133,7 +133,7 @@ pruebahilos (int t, int b, char* l, int p)
   free (threads);
 
   /* Save total execution time to log*/
-  snprintf(log + strlen(log), sizeof log, " El tiempo de ejecucion promedio de los hilos fue: %d.",
+  snprintf(log + strlen(log), sizeof log, " El tiempo de ejecucion promedio de los hilos fue: %d",
     time_execution);
 
   printf("%s\n", log);
